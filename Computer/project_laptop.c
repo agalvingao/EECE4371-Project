@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     void *subscriber = zmq_socket (context, ZMQ_SUB);
     zmq_connect (subscriber, "tcp://localhost:5556");   // FIXME
 
-    char *filter = (argc > 1)? argv [1]: "10001 ";      // FIXME
+    char *filter = (argc > 1)? argv [1]: "";      // FIXME
     int sb = zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, filter, strlen (filter));
     assert (sb == 0);
 
