@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "zhelpers.h"
-#include "assert.h"
 
 /** outputs **/
 /** FIXME **/
@@ -16,44 +16,80 @@
 
 #define BUFFER_SIZE 256
 
-/** analog data struct for ECG data **/
-struct ADASSignal {
-	struct timespec timeStamp;
-	char buffer[200];       // FIXME
-};
+static char buffer [BUFFER_SIZE];
+static pthread_mutex_t mutex1;
 
 /** read in analog data into data struct **/
-void readData(ADASSignal data){
-    char buffer [BUFFER_SIZE];
-    /** FIXME **/
-
-
-    data.buffer = buffer;
-	clock_gettime(CLOCK_REALTIME, &data.timeStamp);
-    return;
-}
-
-/** send data contained in data struct **/
-void sendData(void* publisher, ADASSignal data){
-    char buffer [BUFFER_SIZE];
-    sprintf (buffer, "%" PRIu64 ":%" PRIu64 "=%s", data.timeStamp->tv_sec, data.timeStamp->tv_nsec, data.buffer);
-    s_send (publisher, buffer);
-}
-
-int main(void){
-    void *context = zmq_ctx_new ();
-    void *publisher = zmq_socket (context, ZMQ_PUB);
-    int rc = zmq_bind (publisher, "tcp://*:5556");          // port num, FIXME
-    assert (rc == 0);
-    ADASSignal buffer;
-//    char buffer [BUFFER_SIZE];
-
+static void *readData(void *arg){
     while(1){
-        readData(buffer);
-        sendData(publisher, buffer);
+        int lock1 = pthread_mutex_lock(&mutex1);
+        /** FIXME read in ADAS**/
+
+        int unlock1 = pthread_mutex_unlock(&mutex1);
+    }
+}
+
+static void *writeData(void *arg){
+    void *context = zmq_ctx_new ();
+    void *requester = zmq_socket (context, ZMQ_REQ);	/* Create socket */
+    zmq_connect (requester, "tcp://localhost:5555");	/* FIXME change IP Address */
+
+    while (1) {
+        int lock1 = pthread_mutex_lock(&mutex1);
+        char recvMessage [BUFFER_SIZE];
+        printf ("Sending %d…\n");
+        // FIXME write to buffer
+
+        zmq_send (requester, buffer, BUFFER_SIZE, 0);			/* Send message of 5 bytes */
+        int unlock1 = pthread_mutex_unlock(&mutex1);
+
+        zmq_recv (requester, recvMessage, BUFFER_SIZE, 0);			/* Receive message of 10 bytes */
+        // check response
+        printf ("Received %d\n");
     }
 
-    zmq_close (publisher);
+    zmq_close (requester);								/* Close socket */
     zmq_ctx_destroy (context);
+    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    pthread_mutexattr_t mymutexattr;
+    pthread_mutexattr_init(&mymutexattr);
+    pthread_mutex_init(&mutex1, &mymutexattr); // create mutex1
+    pthread_mutexattr_destroy(&mymutexattr);
+
+    pthread_attr_t myattr;
+    int err1, err2;
+    struct sched_param param;
+
+    main_id = pthread_self();
+
+    pthread_attr_init(&myattr);
+    pthread_attr_getschedparam(&myattr, &param);
+    pthread_attr_setinheritsched(&myattr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy(&myattr, SCHED_RR);
+
+    // set own priority first
+    pthread_attr_setschedparam(&myattr, &param);
+    param.sched_priority = 99;
+    pthread_t tid = pthread_self();
+    pthread_setschedparam(tid, SCHED_RR, &param);
+
+    // set priority of read data
+    param.sched_priority = 10;
+    pthread_attr_setschedparam(&myattr, &param);
+    err2 = pthread_create(&body2_id, &myattr, readData, (void *)parameter2);
+
+    // set priority of write data
+    param.sched_priority = 10;
+    pthread_attr_setschedparam(&myattr, &param);
+    err3 = pthread_create(&body3_id, &myattr, writeData, (void *)parameter3);
+    pthread_attr_destroy(&myattr);
+
+    pthread_join(body1_id, NULL);
+    pthread_join(body2_id, NULL);
+
     return 0;
 }
