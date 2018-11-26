@@ -16,39 +16,41 @@
 
 #define BUFFER_SIZE 256
 
-static char buffer [BUFFER_SIZE];
+static char buffer[BUFFER_SIZE];
 static pthread_mutex_t mutex1;
 
 /** read in analog data into data struct **/
 static void *readData(void *arg){
     while(1){
         int lock1 = pthread_mutex_lock(&mutex1);
-        /** FIXME read in ADAS**/
+        /** FIXME read in ADAS to buffer**/
 
         int unlock1 = pthread_mutex_unlock(&mutex1);
     }
 }
 
 static void *writeData(void *arg){
+    //  Socket to talk to clients
     void *context = zmq_ctx_new ();
-    void *requester = zmq_socket (context, ZMQ_REQ);	/* Create socket */
-    zmq_connect (requester, "tcp://localhost:5555");	/* FIXME change IP Address */
+    void *responder = zmq_socket (context, ZMQ_REP);	/* Create socket */
+    int rc = zmq_bind (responder, "tcp://*:5555");		/* FIXME Bind socket on all interfaces to port 5555 */
+    assert (rc == 0);
 
-    while (1) {
-        int lock1 = pthread_mutex_lock(&mutex1);
-        char recvMessage [BUFFER_SIZE];
-        printf ("Sending %d…\n");
-        // FIXME write to buffer
+    while (1) {											/* Loop forever */
+        printf ("Receiving %d\n");
+        char recvMessage[BUFFER_SIZE];
 
-        zmq_send (requester, buffer, BUFFER_SIZE, 0);			/* Send message of 5 bytes */
-        int unlock1 = pthread_mutex_unlock(&mutex1);
-
-        zmq_recv (requester, recvMessage, BUFFER_SIZE, 0);			/* Receive message of 10 bytes */
-        // check response
+        zmq_recv (responder, recvMessage, BUFFER_SIZE, 0);			/* Receive message of 10 bytes */
         printf ("Received %d\n");
+        printf ("Sending %d…\n");
+        int lock1 = pthread_mutex_lock(&mutex1);
+
+        zmq_send (responder, buffer, BUFFER_SIZE, 0);			/* Send message of 5 bytes */
+        int unlock1 = pthread_mutex_unlock(&mutex1);
+        printf ("Sent %d\n");
     }
 
-    zmq_close (requester);								/* Close socket */
+    zmq_close (responder);								/* Close socket */
     zmq_ctx_destroy (context);
     return 0;
 }
