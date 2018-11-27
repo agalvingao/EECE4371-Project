@@ -16,82 +16,50 @@
 
 #define BUFFER_SIZE 256
 
-static char buffer[BUFFER_SIZE];
-static pthread_mutex_t mutex1;
-
-/** read in analog data into data struct **/
-static void *readData(void *arg){
-    while(1){
-        int lock1 = pthread_mutex_lock(&mutex1);
-        /** FIXME read in ADAS to buffer**/
-
-        int unlock1 = pthread_mutex_unlock(&mutex1);
-    }
+static void getRandomFloat(float a){
+    float x = (float)rand()/(float)(RAND_MAX/a);
+    return x;
 }
 
-static void *writeData(void *arg){
-    //  Socket to talk to clients
-    void *context = zmq_ctx_new ();
-    void *responder = zmq_socket (context, ZMQ_REP);	/* Create socket */
-    int rc = zmq_bind (responder, "tcp://*:5555");		/* FIXME Bind socket on all interfaces to port 5555 */
-    assert (rc == 0);
+static void getString(){
+    char* new_line;
+    char* message_type = "@";
+    uint_32t sampling_number;
+    float volt_a = getRandomFloat(100.0);
+    float volt_b = getRandomFloat(100.0);
+    float volt_c = getRandomFloat(100.0);
 
-    while (1) {											/* Loop forever */
-        printf ("Receiving %d\n");
-        char recvMessage[BUFFER_SIZE];
+    FILE *f = fopen("somefile.txt", "w");
 
-        zmq_recv (responder, recvMessage, BUFFER_SIZE, 0);			/* Receive message of 10 bytes */
-        printf ("Received %d\n");
-        printf ("Sending %d…\n");
-        int lock1 = pthread_mutex_lock(&mutex1);
-
-        zmq_send (responder, buffer, BUFFER_SIZE, 0);			/* Send message of 5 bytes */
-        int unlock1 = pthread_mutex_unlock(&mutex1);
-        printf ("Sent %d\n");
+    for(sampling_number = 0; sampling_number < 2000; ++sampling_number){
+        sprintf(new_line, "%s%s:%08.4f,%08.4f,%08.4f\n", message_type, sampling_number, volt_a, volt_b, volt_c);
+        fprintf(f, "%s", text);
+        fflush();
+        new_line = "";
     }
 
-    zmq_close (responder);								/* Close socket */
-    zmq_ctx_destroy (context);
+    fclose(f);
     return 0;
 }
 
-int main(int argc, char *argv[])
+static char buffer[BUFFER_SIZE];
+static uint_32 bufferCount = 0;
+
+int main(void)
 {
-    pthread_mutexattr_t mymutexattr;
-    pthread_mutexattr_init(&mymutexattr);
-    pthread_mutex_init(&mutex1, &mymutexattr); // create mutex1
-    pthread_mutexattr_destroy(&mymutexattr);
+    //  Prepare our context and publisher
+    void *context = zmq_ctx_new ();
+    void *publisher = zmq_socket (context, ZMQ_PUB);
+    int rc = zmq_bind (publisher, "tcp://*:5556");
+    assert (rc == 0);
 
-    pthread_attr_t myattr;
-    int err1, err2;
-    struct sched_param param;
-
-    main_id = pthread_self();
-
-    pthread_attr_init(&myattr);
-    pthread_attr_getschedparam(&myattr, &param);
-    pthread_attr_setinheritsched(&myattr, PTHREAD_EXPLICIT_SCHED);
-    pthread_attr_setschedpolicy(&myattr, SCHED_RR);
-
-    // set own priority first
-    pthread_attr_setschedparam(&myattr, &param);
-    param.sched_priority = 99;
-    pthread_t tid = pthread_self();
-    pthread_setschedparam(tid, SCHED_RR, &param);
-
-    // set priority of read data
-    param.sched_priority = 10;
-    pthread_attr_setschedparam(&myattr, &param);
-    err2 = pthread_create(&body2_id, &myattr, readData, (void *)parameter2);
-
-    // set priority of write data
-    param.sched_priority = 10;
-    pthread_attr_setschedparam(&myattr, &param);
-    err3 = pthread_create(&body3_id, &myattr, writeData, (void *)parameter3);
-    pthread_attr_destroy(&myattr);
-
-    pthread_join(body1_id, NULL);
-    pthread_join(body2_id, NULL);
-
+    while (1) {
+        //  Send message to all subscribers
+        char* update[BUFFER_SIZE];
+        update = getString();
+        s_send (publisher, update);
+    }
+    zmq_close (publisher);
+    zmq_ctx_destroy (context);
     return 0;
 }
