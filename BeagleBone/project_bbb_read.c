@@ -11,10 +11,7 @@
 #define PACKET_SAMPLES 400
 #define BUFFER_SIZE (LINE_LENGTH * PACKET_SAMPLES + 1)
 
-static FILE *f;
-
 static double getRandomFloat(double min, double max){
-    srand(time(0));
     double range = (max - min);
     double div = RAND_MAX / range;
     return min + (rand() / div);
@@ -36,8 +33,11 @@ static char* getString(void){
 
 int main(void)
 {
-    mkfifo("../ECG_data.txt", 0666);
-    f = fopen("../ECG_data.txt", "w");
+    system(rm-f "./ECG_data.txt");
+    mkfifo("./ECG_data.txt", 0666);
+    FILE *f = fopen("./ECG_data.txt", "w");
+
+    srand(time(0));
 
     while(1){
         char* line = getString();

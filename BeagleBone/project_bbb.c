@@ -9,22 +9,6 @@
 
 static FILE *f;
 
-static void getRandomFloat(float a){
-    float x = (float)rand()/(float)(RAND_MAX/a);
-    return x;
-}
-
-static char* getString(void){
-    char* new_line[LINE_LENGTH];
-    double time_stamp = 1;
-    double volt_a = getRandomFloat(100.0);
-    double volt_b = getRandomFloat(100.0);
-    double volt_c = getRandomFloat(100.0);
-
-    sprintf(new_line, "%011.4f %+05.3f %+05.3f %+05.3f\n", time_stamp, volt_a, volt_b, volt_c);
-    return new_line;
-}
-
 static void getPacket(char* &buffer){
     char* new_line[LINE_LENGTH];
 
@@ -41,8 +25,8 @@ static void getPacket(char* &buffer){
 
 int main(void)
 {
-//    system("./start_ECG_driver.sh");
-    f = fopen("../ECG_data.txt", "r");
+    system("./start_ECG_driver.sh");
+    f = fopen("./ECG_data.txt", "r");
     char* const buffer[BUFFER_SIZE];
 
     //  Prepare our context and publisher
