@@ -1,34 +1,40 @@
 /** BeagleBone Blue code **/
 #include "stdint.h"
+#include "stdio.h"
 #include "stdlib.h"
-#include "zhelpers.h"
 #include "sys/types"
 #include "sys/stats"
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
+
+#include "project_bbb_read.c"
 
 #define SAMPLE_RATE 2000
 #define LINE_LENGTH 33
 #define PACKET_SAMPLES 400
 #define BUFFER_SIZE (LINE_LENGTH * PACKET_SAMPLES + 1)
 
-static double getRandomFloat(double min, double max){
+static double getRandomFloat(double min, double max)
+{
     double range = (max - min);
     double div = RAND_MAX / range;
     return min + (rand() / div);
 }
 
-static char* getString(void){
+static char* getString(void)
+{
     char* new_line[LINE_LENGTH];
     int static index = 0;
 
-    float volt_a = getRandomFloat(100.0, -30.0);
-    float volt_b = getRandomFloat(100.0, -30.0);
-    float volt_c = getRandomFloat(100.0, -30.0);
+    float volt_a = getRandomFloat(-30.0, 100.0);
+    float volt_b = getRandomFloat(-30.0, 100.0);
+    float volt_c = getRandomFloat(-30.0, 100.0);
     double time_val = (double)index / (double)SAMPLE_RATE;
 
-    sprintf(new_line, "%011.4f %+05.3f %+05.3f %+05.3f\n", time_val, volt_a, volt_b, volt_c);
+    sprintf(*new_line, "%011.4f %+05.3f %+05.3f %+05.3f\n", time_val, volt_a, volt_b, volt_c);
     ++index;
-    return new_line;
+    return* new_line;
 }
 
 int main(void)

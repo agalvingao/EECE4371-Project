@@ -4,19 +4,22 @@
 #define PACKET_SAMPLES 400
 #define BUFFER_SIZE (LINE_LENGTH * PACKET_SAMPLES + 1)
 
-void printData(uint_32t time_stamp, float volt_a, float volt_b, float volt_c){
+void printData(uint_32t time_stamp, float volt_a, float volt_b, float volt_c)
+{
     // print data in buffer
 }
 
-void parseData(char *string){
+void parseData(char *string)
+{
     double time_stamp;
-    double volt_a, volt_b, volt_c;
-    sscanf(string, "%011.4f %+05.3f %+05.3f %+05.3f\n", &time_stamp, &volt_a, &volt_b, &volt_c);
+    double volt[3];
+    sscanf(string, "%011.4f %+05.3f %+05.3f %+05.3f\n", &time_stamp, &volt[0], &volt[1], &volt[2]);
 
-    printData(time_stamp, volt_a, volt_b, volt_c);
+    printData(time_stamp, volt[0], volt[1], volt[2);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     //  Socket to talk to server
     void *context = zmq_ctx_new ();
     void *subscriber = zmq_socket (context, ZMQ_SUB);

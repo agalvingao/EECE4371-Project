@@ -1,6 +1,9 @@
 /** BeagleBone Blue code **/
+#include "assert.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include <stdio.h>
+#include <string.h>
 #include "zhelpers.h"
 
 #define LINE_LENGTH 33
@@ -9,7 +12,8 @@
 
 static FILE *f;
 
-static void getPacket(char* &buffer){
+static void getPacket(char* &buffer)
+{
     char* new_line[LINE_LENGTH];
 
     //  null terminator
@@ -17,16 +21,15 @@ static void getPacket(char* &buffer){
 
     int i;
     for(i = 0; i < PACKET_SAMPLES; ++i){
-        fgets(new_line, LINE_LENGTH, FILE *f);
+        fgets(*new_line, LINE_LENGTH, f);
         memcpy(&buffer[i*LINE_LENGTH], new_line, LINE_LENGTH);
-        new_line = "";
     }
 }
 
 int main(void)
 {
     system("./start_ECG_driver.sh");
-    f = fopen("./ECG_data.txt", "r");
+    f = fopen("ECG_data.txt", "r");
     char* const buffer[BUFFER_SIZE];
 
     //  Prepare our context and publisher
@@ -37,7 +40,7 @@ int main(void)
 
     while (1) {
         char* line[LINE_LENGTH];
-        getPacket(&buffer);
+        getPacket(buffer);
         s_send (publisher, buffer);
     }
 
