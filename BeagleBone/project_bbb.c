@@ -1,52 +1,50 @@
 /** BeagleBone Blue code **/
-#include <stdbool.h>
-#include <stdio.h>
-#include <inttypes.h>
-#include <time.h>
-#include <pthread.h>
-
+#include "stdint.h"
+#include "stdlib.h"
 #include "zhelpers.h"
 
-/** outputs **/
-/** FIXME **/
-#define GPIO_0 45
-#define GPIO_1 45
-#define GPIO_2 45
-#define GPIO_3 45
+#define LINE_LENGTH 33
+#define PACKET_SAMPLES 400
+#define BUFFER_SIZE (LINE_LENGTH * PACKET_SAMPLES + 1)
 
-#define BUFFER_SIZE 256
+static FILE *f;
 
 static void getRandomFloat(float a){
     float x = (float)rand()/(float)(RAND_MAX/a);
     return x;
 }
 
-static void getString(){
-    char* new_line;
-    char* message_type = "@";
-    uint_32t sampling_number;
-    float volt_a = getRandomFloat(100.0);
-    float volt_b = getRandomFloat(100.0);
-    float volt_c = getRandomFloat(100.0);
+static char* getString(void){
+    char* new_line[LINE_LENGTH];
+    double time_stamp = 1;
+    double volt_a = getRandomFloat(100.0);
+    double volt_b = getRandomFloat(100.0);
+    double volt_c = getRandomFloat(100.0);
 
-    FILE *f = fopen("somefile.txt", "w");
-
-    for(sampling_number = 0; sampling_number < 2000; ++sampling_number){
-        sprintf(new_line, "%s%s:%08.4f,%08.4f,%08.4f\n", message_type, sampling_number, volt_a, volt_b, volt_c);
-        fprintf(f, "%s", text);
-        fflush();
-        new_line = "";
-    }
-
-    fclose(f);
-    return 0;
+    sprintf(new_line, "%011.4f %+05.3f %+05.3f %+05.3f\n", time_stamp, volt_a, volt_b, volt_c);
+    return new_line;
 }
 
-static char buffer[BUFFER_SIZE];
-static uint_32 bufferCount = 0;
+static void getPacket(char* &buffer){
+    char* new_line[LINE_LENGTH];
+
+    //  null terminator
+    buffer[BUFFER_SIZE] = 0;
+
+    int i;
+    for(i = 0; i < PACKET_SAMPLES; ++i){
+        fgets(new_line, LINE_LENGTH, FILE *f);
+        memcpy(&buffer[i*LINE_LENGTH], new_line, LINE_LENGTH);
+        new_line = "";
+    }
+}
 
 int main(void)
 {
+//    system("./start_ECG_driver.sh");
+    f = fopen("../ECG_data.txt", "r");
+    char* const buffer[BUFFER_SIZE];
+
     //  Prepare our context and publisher
     void *context = zmq_ctx_new ();
     void *publisher = zmq_socket (context, ZMQ_PUB);
@@ -54,12 +52,14 @@ int main(void)
     assert (rc == 0);
 
     while (1) {
-        //  Send message to all subscribers
-        char* update[BUFFER_SIZE];
-        update = getString();
-        s_send (publisher, update);
+        char* line[LINE_LENGTH];
+        getPacket(&buffer);
+        s_send (publisher, buffer);
     }
+
     zmq_close (publisher);
     zmq_ctx_destroy (context);
+
+    fclose(f);
     return 0;
 }
