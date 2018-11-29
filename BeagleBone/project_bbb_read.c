@@ -32,7 +32,7 @@ static char* getString(void)
     float volt_c = getRandomFloat(-30.0, 100.0);
     double time_val = (double)index / (double)SAMPLE_RATE;
 
-    sprintf(*new_line, "%011.4f %+05.3f %+05.3f %+05.3f\n", time_val, volt_a, volt_b, volt_c);
+    sprintf(*new_line, "%011.4f % 05.3f % 05.3f % 05.3f\n", time_val, volt_a, volt_b, volt_c);
     ++index;
     return* new_line;
 }

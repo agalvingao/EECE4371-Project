@@ -13,7 +13,7 @@ void parseData(char *string)
 {
     double time_stamp;
     double volt[3];
-    sscanf(string, "%011.4f %+05.3f %+05.3f %+05.3f\n", &time_stamp, &volt[0], &volt[1], &volt[2]);
+    sscanf(string, "%011.4f % 05.3f % 05.3f % 05.3f\n", &time_stamp, &volt[0], &volt[1], &volt[2]);
 
     printData(time_stamp, volt[0], volt[1], volt[2);
 }
