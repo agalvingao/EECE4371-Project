@@ -12,7 +12,7 @@
 
 static FILE *f;
 
-static void getPacket(char* &buffer)
+static void getPacket(char* const buffer)
 {
     char* new_line[LINE_LENGTH];
 
