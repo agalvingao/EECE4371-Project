@@ -8,8 +8,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "project_bbb_read.c"
-
 #define SAMPLE_RATE 2000
 #define LINE_LENGTH 33
 #define PACKET_SAMPLES 400
@@ -27,9 +25,9 @@ static char* getString(void)
     char new_line[LINE_LENGTH];
     int static index = 0;
 
-    float volt_a = getRandomFloat(-30.0, 100.0);
-    float volt_b = getRandomFloat(-30.0, 100.0);
-    float volt_c = getRandomFloat(-30.0, 100.0);
+    float volt_a = getRandomFloat(-2.0, 2.0);
+    float volt_b = getRandomFloat(-2.0, 2.0);
+    float volt_c = getRandomFloat(-2.0, 2.0);
     double time_val = (double)index / (double)SAMPLE_RATE;
 
     sprintf(*new_line, "%011.4f % 05.3f % 05.3f % 05.3f\n", time_val, volt_a, volt_b, volt_c);
