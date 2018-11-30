@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     while (1) {
         char *string = s_recv (subscriber);
-        printf("%s", string);
+        printf("%s",string);
         fprintf(f, "%s", string);
         free (string);
     }
