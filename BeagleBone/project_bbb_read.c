@@ -24,7 +24,7 @@ static double getRandomFloat(double min, double max)
 
 static char* getString(void)
 {
-    char* new_line[LINE_LENGTH];
+    char new_line[LINE_LENGTH];
     int static index = 0;
 
     float volt_a = getRandomFloat(-30.0, 100.0);

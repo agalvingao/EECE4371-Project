@@ -12,16 +12,16 @@
 
 static FILE *f;
 
-static void getPacket(char* const buffer)
+static void getPacket(char* buffer)
 {
-    char* new_line[LINE_LENGTH];
+    char new_line[LINE_LENGTH];
 
     //  null terminator
     buffer[BUFFER_SIZE] = 0;
 
     int i;
     for(i = 0; i < PACKET_SAMPLES; ++i){
-        fgets(*new_line, LINE_LENGTH, f);
+        fgets(new_line, LINE_LENGTH, f);
         memcpy(&buffer[i*LINE_LENGTH], new_line, LINE_LENGTH);
     }
 }
@@ -30,7 +30,7 @@ int main(void)
 {
     system("./start_ECG_driver.sh");
     f = fopen("ECG_data.txt", "r");
-    char* const buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
 
     //  Prepare our context and publisher
     void *context = zmq_ctx_new ();
@@ -39,7 +39,7 @@ int main(void)
     assert (rc == 0);
 
     while (1) {
-        char* line[LINE_LENGTH];
+        char line[LINE_LENGTH];
         getPacket(buffer);
         s_send (publisher, buffer);
     }
