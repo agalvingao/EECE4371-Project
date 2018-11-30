@@ -6,7 +6,10 @@ maxValue = 0;
 minValue = 0;
 time = 0;
 
-fid=fopen('data_final');
+system('./demo/start-demo.sh &');
+pause(1);
+
+fid=fopen('data_final.txt');
 while(1)
     f = -1;
     pause(PAUSE_TIME);
@@ -20,7 +23,7 @@ while(1)
     x = s(1);
     time = x;
     if(x < time), x = x + time, end
-    if(x == 0)
+    if(x == 0) 
         hold off
         title('\bfECG Reading')
         xlabel('Time (s)')
@@ -29,14 +32,14 @@ while(1)
     end
     v1 = s(2);
     if v1 > maxValue, maxValue = v1, end
-    if v1 < minValue, minValue = v1, end
+    if v1 < minValue, minValue = v1, end 
     v2 = s(3);
     if v2 > maxValue, maxValue = v2, end
     if v2 < minValue, minValue = v2, end
     v3 = s(4);
     if v3 > maxValue, maxValue = v3, end
     if v3 < minValue, minValue = v3, end
-
+   
     plot(x, v1, 'r.')
     hold on
     plot(x, v2, 'g.')
