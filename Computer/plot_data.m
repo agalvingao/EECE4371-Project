@@ -1,15 +1,15 @@
 BUFFER_SIZE = 34;
 X_RANGE = 0.5;
-PAUSE_TIME = 0.0001;
+PAUSE_TIME = 0.1;
 
 maxValue = 0;
 minValue = 0;
 time = 0;
 
-system('./demo/start-demo.sh &');
+system('./demo/bbb_3 tcp://192.168.8.1:5556 &');
 pause(1);
 
-fid=fopen('data_final.txt');
+fid=fopen('demo/data_final');
 while(1)
     f = -1;
     pause(PAUSE_TIME);
@@ -19,6 +19,9 @@ while(1)
             f = -1;
         end
     end
+    
+    disp(f);
+    
     s = sscanf(f, '%f %f %f %f');
     x = s(1);
     time = x;

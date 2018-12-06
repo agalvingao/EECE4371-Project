@@ -4,4 +4,4 @@
 
 #mkfifo data_final
 
-./bbb_3 "tcp://192.168.8.1:5556"
+./bbb_3 `cat ../IP_BB | tr -d '\n'`

@@ -25,12 +25,12 @@ int main(int argc, char **argv)
 
     while (1) {
         char *string = s_recv (subscriber);
-        printf("%s",string);
+        printf("%s", string);
         fprintf(f, "%s", string);
         free (string);
     }
 
-    zmq_close (subscriber);
-    zmq_ctx_destroy (context);
+    zmq_close(subscriber);
+    zmq_ctx_destroy(context);
     return 0;
 }
